@@ -1,17 +1,32 @@
 import React, { Component } from 'react';
 
-import { CardList } from "./components/card-list/card-list.component";
-import { SearchBox } from "./components/search-box/search-box.component";
+import { CardList } from './components/card-list/card-list.component';
+import { SearchBox } from './components/search-box/search-box.component';
+import ErrorBoundry from  './components/error-boundry/error-boundry.component';
+
+import { connect } from 'react-redux';
 
 import './App.css';
+import {setSearchField} from "./redux/searchField/searchField.actions";
+
+const mapStateToProps = state => {
+  return {
+    searchField: state.searchField
+  }
+}
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    handleChange: (event) => (dispatch(setSearchField(event.target.value)))
+  }
+}
 
 class App extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
 
     this.state = {
       monsters: [],
-      searchField: ''
     };
   }
 
@@ -21,14 +36,9 @@ class App extends Component {
        .then(data => this.setState({ monsters: data }));
   }
 
-  handleChange = e => {
-    this.setState({searchField: e.target.value})
-  }
-
   render() {
-
-    const { handleChange } = this;
-    const { monsters, searchField } = this.state;
+    const { searchField, handleChange } = this.props;
+    const { monsters } = this.state;
     const filteredMonsters = monsters.filter(monster =>
        monster.name.toLowerCase().includes(searchField.toLowerCase())
     )
@@ -40,10 +50,12 @@ class App extends Component {
               placeholder={'Search Monsters'}
               handleChange={handleChange}
            />
-           <CardList monsters={filteredMonsters} />
+           <ErrorBoundry>
+            <CardList monsters={filteredMonsters} />
+           </ErrorBoundry>
          </div>
     );
   }
 }
 
-export default App;
+export default connect(mapStateToProps, mapDispatchToProps)(App);
